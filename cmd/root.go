@@ -13,9 +13,11 @@ import (
 	"github.com/taylormonacelli/goldbug"
 )
 
-var cfgFile string
-var verbose bool
-var logFormat string
+var (
+	cfgFile   string
+	verbose   bool
+	logFormat string
+)
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -50,12 +52,22 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
+	var err error
+
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.doublerat.yaml)")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "enable verbose mode")
-	viper.BindPFlag("verbose", rootCmd.PersistentFlags().Lookup("verbose"))
+	err = viper.BindPFlag("verbose", rootCmd.PersistentFlags().Lookup("verbose"))
+	if err != nil {
+		fmt.Printf("Error binding verbose flag: %v\n", err)
+		os.Exit(1)
+	}
 
 	rootCmd.PersistentFlags().StringVar(&logFormat, "log-format", "", "json or text (default is text)")
-	viper.BindPFlag("log-format", rootCmd.PersistentFlags().Lookup("log-format"))
+	err = viper.BindPFlag("log-format", rootCmd.PersistentFlags().Lookup("log-format"))
+	if err != nil {
+		fmt.Printf("Error binding log-format flag: %v\n", err)
+		os.Exit(1)
+	}
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
