@@ -1,0 +1,7 @@
+* doublerat
+
+This is a description of my doublerat.
+
+** Usage
+
+To use my project, run this command: ./doublerat --verbose
