@@ -40,11 +40,11 @@ func RunTest() error {
 	}
 	fmt.Println("Git repository created successfully.")
 
-	var repoService RepositoryService
+	var repoFetcher RepositoryFetcher
 	var repos []RepositoryInfo
 
-	repoService = &StaticRepositoryService{}
-	repos, err = retrieveRepositories(repoService)
+	repoFetcher = &StaticRepositoryService{}
+	repos, err = retrieveRepositories(repoFetcher)
 	if err != nil {
 		return fmt.Errorf("error retrieving repositories using static strategy: %v", err)
 	}
@@ -82,53 +82,56 @@ func AddSubmodule(repo *git.Repository, name, path, url, branch string) error {
 
 	wtree, err := repo.Worktree()
 	if err != nil {
-		return err
+		return fmt.Errorf("error getting worktree: %v", err)
 	}
 
 	gitmodulesFile := filepath.Join(wtree.Filesystem.Root(), ".gitmodules")
 	f, err := os.OpenFile(gitmodulesFile, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
 	if err != nil {
-		return err
+		return fmt.Errorf("error opening .gitmodules file: %v", err)
 	}
 
 	t := template.Must(template.New("gitmodule").Parse(gitmodTemplate))
 	if err := t.Execute(f, spec); err != nil {
-		return err
+		return fmt.Errorf("error executing template: %v", err)
 	}
 
 	if err := f.Close(); err != nil {
-		return err
+		return fmt.Errorf("error closing .gitmodules file: %v", err)
 	}
 
 	submod, err := wtree.Submodule(name)
 	if err != nil {
-		return err
+		return fmt.Errorf("error getting submodule: %v", err)
 	}
 
 	if err := submod.Init(); err != nil {
-		return err
+		return fmt.Errorf("error initializing submodule: %v", err)
 	}
 
 	subrepo, err := submod.Repository()
 	if err != nil {
-		return err
+		return fmt.Errorf("error getting submodule repository: %v", err)
 	}
 
 	subwtree, err := subrepo.Worktree()
 	if err != nil {
-		return err
+		return fmt.Errorf("error getting submodule worktree: %v", err)
 	}
 
-	opts := &git.PullOptions{RemoteName: "origin"}
+	opts := &git.PullOptions{
+		RemoteName: "origin",
+		Depth:      1,
+	}
 	if err := subwtree.Pull(opts); err != nil {
-		return err
+		return fmt.Errorf("error pulling submodule: %v", err)
 	}
 
 	return nil
 }
 
-// RepositoryService defines the methods for interacting with repositories.
-type RepositoryService interface {
+// RepositoryFetcher defines the methods for interacting with repositories.
+type RepositoryFetcher interface {
 	GetRepositories() ([]RepositoryInfo, error)
 }
 
@@ -197,6 +200,6 @@ func (j *JSONFileRepositoryService) GetRepositories() ([]RepositoryInfo, error) 
 	return repositoryInfoSlice, nil
 }
 
-func retrieveRepositories(repoService RepositoryService) ([]RepositoryInfo, error) {
+func retrieveRepositories(repoService RepositoryFetcher) ([]RepositoryInfo, error) {
 	return repoService.GetRepositories()
 }
