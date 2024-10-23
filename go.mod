@@ -6,7 +6,7 @@ toolchain go1.21.6
 
 require (
 	github.com/go-git/go-git/v5 v5.11.0
-	github.com/spf13/cobra v1.8.0
+	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.17.0
 	github.com/taylormonacelli/goldbug v0.0.6
 )
