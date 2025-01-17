@@ -2,7 +2,7 @@ module github.com/taylormonacelli/doublerat
 
 go 1.21.5
 
-toolchain go1.23.4
+toolchain go1.23.5
 
 require (
 	github.com/go-git/go-git/v5 v5.13.1
